@@ -76,6 +76,7 @@ namespace TrenchBroom {
         class CommandResult;
         class Grid;
         enum class PasteType;
+        class RepeatStack;
         class Selection;
         class UndoableCommand;
         class ViewEffectsService;
@@ -121,6 +122,8 @@ namespace TrenchBroom {
             mutable bool m_selectionBoundsValid;
 
             ViewEffectsService* m_viewEffectsService;
+
+            std::unique_ptr<RepeatStack> m_repeatStack;
         public: // notification
             Notifier<Command*> commandDoNotifier;
             Notifier<Command*> commandDoneNotifier;
@@ -435,7 +438,7 @@ namespace TrenchBroom {
             void undoCommand();
             void redoCommand();
             bool canRepeatCommands() const;
-            std::unique_ptr<CommandResult> repeatCommands();
+            void repeatCommands();
             void clearRepeatableCommands();
         public: // transactions
             void startTransaction(const std::string& name = "");
@@ -452,9 +455,6 @@ namespace TrenchBroom {
             virtual const std::string& doGetRedoCommandName() const = 0;
             virtual void doUndoCommand() = 0;
             virtual void doRedoCommand() = 0;
-            virtual bool doCanRepeatCommands() const = 0;
-            virtual std::unique_ptr<CommandResult> doRepeatCommands() = 0;
-            virtual void doClearRepeatableCommands() = 0;
 
             virtual void doStartTransaction(const std::string& name) = 0;
             virtual void doCommitTransaction() = 0;
