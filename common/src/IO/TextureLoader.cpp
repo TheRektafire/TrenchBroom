@@ -35,8 +35,11 @@
 #include "IO/Path.h"
 #include "Model/GameConfig.h"
 
+#include <chrono>
 #include <string>
 #include <vector>
+
+#include <QDebug>
 
 namespace TrenchBroom {
     namespace IO {
@@ -104,7 +107,13 @@ namespace TrenchBroom {
         }
 
         Assets::TextureCollection TextureLoader::loadTextureCollection(const Path& path) {
-            return m_textureCollectionLoader->loadTextureCollection(path, m_textureExtensions, *m_textureReader);
+            const auto start = std::chrono::high_resolution_clock::now();
+            auto collection = m_textureCollectionLoader->loadTextureCollection(path, m_textureExtensions, *m_textureReader);
+            const auto end = std::chrono::high_resolution_clock::now();
+
+            qDebug() << "Time elapsed for texture collection: " << std::chrono::duration<double>(end - start).count() * 1000.0 << "ms";
+
+            return collection;
         }
 
         void TextureLoader::loadTextures(const std::vector<Path>& paths, Assets::TextureManager& textureManager) {

@@ -104,7 +104,8 @@ namespace TrenchBroom {
                     const size_t size = mipSize(width, height, i);
 
                     Color tempColor;
-                    palette.indexedToRgba(reader, size, buffers[i], transparent, tempColor);
+                    palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), size, buffers[i], transparent, tempColor);
+                    reader.seekForward(size);
                     if (i == 0) {
                         averageColor = tempColor;
                     }

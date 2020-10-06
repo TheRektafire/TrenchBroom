@@ -98,8 +98,10 @@ namespace TrenchBroom {
                     Assets::TextureBuffer rgbaImage;
                     rgbaImage.resize(4 * w * h);
 
+                    const size_t pixelCount = w * h;
                     Color averageColor;
-                    palette.indexedToRgba(reader, w * h, rgbaImage, Assets::PaletteTransparency::Opaque, averageColor);
+                    palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), pixelCount, rgbaImage, Assets::PaletteTransparency::Opaque, averageColor);
+                    reader.seekForward(pixelCount);
                     buffers.emplace_back(std::move(rgbaImage));
 
                     if (mipLevel == 0) {

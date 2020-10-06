@@ -224,7 +224,7 @@ namespace TrenchBroom {
         }
 
         std::unique_ptr<Assets::EntityModel> MdlParser::doInitializeModel(Logger& /* logger */) {
-            auto reader = Reader::from(m_begin, m_end);
+            auto reader = Reader::from(m_begin, m_end).buffer();
 
             const auto ident = reader.readInt<int32_t>();
             const auto version = reader.readInt<int32_t>();
@@ -260,7 +260,7 @@ namespace TrenchBroom {
         }
 
         void MdlParser::doLoadFrame(const size_t frameIndex, Assets::EntityModel& model, Logger& /* logger */) {
-            auto reader = Reader::from(m_begin, m_end);
+            auto reader = Reader::from(m_begin, m_end).buffer();
 
             const auto ident = reader.readInt<int32_t>();
             const auto version = reader.readInt<int32_t>();
@@ -296,7 +296,7 @@ namespace TrenchBroom {
             parseFrame(reader, model, frameIndex, surface, triangles, vertices, skinWidth, skinHeight, origin, scale);
         }
 
-        void MdlParser::parseSkins(Reader& reader, Assets::EntityModelSurface& surface, const size_t count, const size_t width, const size_t height, const int flags) {
+        void MdlParser::parseSkins(BufferedReader& reader, Assets::EntityModelSurface& surface, const size_t count, const size_t width, const size_t height, const int flags) {
             const auto size = width * height;
             const auto transparency = (flags & MF_HOLEY)
                     ? Assets::PaletteTransparency::Index255Transparent
@@ -312,7 +312,8 @@ namespace TrenchBroom {
                 const auto skinGroup = reader.readSize<int32_t>();
                 if (skinGroup == 0) {
                     Assets::TextureBuffer rgbaImage(size * 4);
-                    m_palette.indexedToRgba(reader, size, rgbaImage, transparency, avgColor);
+                    m_palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), size, rgbaImage, transparency, avgColor);
+                    reader.seekForward(size);
 
                     const std::string textureName = m_name + "_" + kdl::str_to_string(i);
                     textures.emplace_back(textureName, width, height, avgColor, std::move(rgbaImage), GL_RGBA, type);
@@ -322,7 +323,8 @@ namespace TrenchBroom {
                     Assets::TextureBuffer rgbaImage(size * 4);
                     reader.seekForward(pictureCount * 4); // skip the picture times
 
-                    m_palette.indexedToRgba(reader, size, rgbaImage, transparency, avgColor);
+                    m_palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), size, rgbaImage, transparency, avgColor);
+                    reader.seekForward(size);
                     reader.seekForward((pictureCount - 1) * size);  // skip all remaining pictures
 
                     const std::string textureName = m_name + "_" + kdl::str_to_string(i);
