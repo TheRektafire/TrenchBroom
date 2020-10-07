@@ -121,9 +121,6 @@ namespace TrenchBroom {
         }
 
         bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
-            float avg[3];
-            avg[0] = avg[1] = avg[2] = 0.0;
-
             const unsigned char* paletteData =
                 (transparency == PaletteTransparency::Opaque)
                 ? m_data->opaqueData.data()
@@ -143,10 +140,16 @@ namespace TrenchBroom {
             }
 
             // Check average color
-            for (size_t i = 0; i < 3; ++i) {
-                averageColor[i] = (avg[i] / static_cast<float>(pixelCount)) / static_cast<float>(0xFF);
+            uint32_t colorSum[3] = {0, 0, 0};
+            for (size_t i = 0; i < pixelCount; ++i) {
+                colorSum[0] += static_cast<uint32_t>(dest[(i * 4) + 0]);
+                colorSum[1] += static_cast<uint32_t>(dest[(i * 4) + 1]);
+                colorSum[2] += static_cast<uint32_t>(dest[(i * 4) + 2]);
             }
-            averageColor[3] = 1.0f;
+            averageColor = Color(colorSum[0] / (255.0f * pixelCount),
+                                 colorSum[1] / (255.0f * pixelCount),
+                                 colorSum[2] / (255.0f * pixelCount),
+                                 1.0f);
 
             // Check for transparency
             bool hasTransparency = false;
