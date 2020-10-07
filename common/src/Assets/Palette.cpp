@@ -30,15 +30,46 @@
 
 namespace TrenchBroom {
     namespace Assets {
-        Palette::Data::Data(std::vector<unsigned char>&& data) :
-        m_data(std::move(data)) {
-            ensure(!m_data.empty(), "palette is empty");
+        struct PaletteData {
+            /**
+             * 1024 bytes, RGBA order.
+             */
+            std::vector<unsigned char> opaqueData;
+            /**
+             * 1024 bytes, RGBA order.
+             */
+            std::vector<unsigned char> index255TransparentData;
+        };
+
+        static std::shared_ptr<PaletteData> makeData(std::vector<unsigned char> data) {
+            ensure(data.size() == 768, "expected 768 bytes");
+
+            PaletteData result;
+            result.opaqueData.reserve(1024);
+
+            for (size_t i = 0; i < 256; ++i) {
+                const auto r = data[3 * i + 0];
+                const auto g = data[3 * i + 1];
+                const auto b = data[3 * i + 2];
+
+                result.opaqueData.push_back(r);
+                result.opaqueData.push_back(g);
+                result.opaqueData.push_back(b);
+                result.opaqueData.push_back(0xFF);
+            }
+
+            // build index255TransparentData from opaqueData
+            result.index255TransparentData = result.opaqueData;
+            result.index255TransparentData[1023] = 0;
+
+            return std::make_shared<PaletteData>(std::move(result));
         }
+
 
         Palette::Palette() {}
 
         Palette::Palette(std::vector<unsigned char> data) :
-        m_data(std::make_shared<Data>(std::move(data))) {}
+        m_data(makeData(data)) {}
 
         Palette Palette::loadFile(const IO::FileSystem& fs, const IO::Path& path) {
             try {
@@ -92,31 +123,41 @@ namespace TrenchBroom {
         bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
             float avg[3];
             avg[0] = avg[1] = avg[2] = 0.0;
-            bool hasTransparency = false;
-            const unsigned char* paletteData = m_data->m_data.data();
+
+            const unsigned char* paletteData =
+                (transparency == PaletteTransparency::Opaque)
+                ? m_data->opaqueData.data()
+                : m_data->index255TransparentData.data();
 
             assert(reader.canRead(pixelCount));
 
             const unsigned char *indexedImage = reinterpret_cast<const unsigned char*>(reader.begin() + reader.position());
             reader.seekForward(pixelCount);
 
-            {
-                unsigned char* dest = rgbaImage.data();
+            // Write rgba pixels
+            unsigned char* dest = rgbaImage.data();
+            for (size_t i = 0; i < pixelCount; ++i) {
+                const int index = static_cast<int>(indexedImage[i]);
 
-
-                for (size_t i = 0; i < pixelCount; ++i) {
-                    const int index = static_cast<int>(indexedImage[i]);
-
-                    memcpy(dest, &paletteData[index * 3], 4);
-                    dest += 4;
-                }
+                memcpy(dest + (i * 4), &paletteData[index * 4], 4);
             }
 
-
+            // Check average color
             for (size_t i = 0; i < 3; ++i) {
                 averageColor[i] = (avg[i] / static_cast<float>(pixelCount)) / static_cast<float>(0xFF);
             }
             averageColor[3] = 1.0f;
+
+            // Check for transparency
+            bool hasTransparency = false;
+            if (transparency == PaletteTransparency::Index255Transparent) {
+                // Take the bitwise AND of the alpha channel of all pixels
+                unsigned char andAlpha = 0xff;
+                for (size_t i = 0; i < pixelCount; ++i) {
+                    andAlpha &= dest[(i * 4) + 3];
+                }
+                hasTransparency = (andAlpha != 0xff);
+            }
 
             return hasTransparency;
         }

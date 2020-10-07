@@ -39,25 +39,11 @@ namespace TrenchBroom {
             Opaque, Index255Transparent
         };
 
+        struct PaletteData;
+
         class Palette {
         private:
-            class Data {
-            public:
-                std::vector<unsigned char> m_data;
-                ///**
-                // * 1024 bytes, RGBA order.
-                // */
-                //std::vector<unsigned char> m_opaqueData;
-                ///**
-                // * 1024 bytes, RGBA order.
-                // */
-                //std::vector<unsigned char> m_index255TransparentData;
-            public:
-                Data(std::vector<unsigned char>&& data);
-            };
-
-            using DataPtr = std::shared_ptr<Data>;
-            DataPtr m_data;
+            std::shared_ptr<PaletteData> m_data;
         public:
             Palette();
             Palette(std::vector<unsigned char> data);
