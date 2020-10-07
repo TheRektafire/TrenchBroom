@@ -29,6 +29,8 @@
 
 #include <kdl/string_format.h>
 
+#include <string>
+
 namespace TrenchBroom {
     namespace Assets {
         struct PaletteData {
@@ -42,8 +44,10 @@ namespace TrenchBroom {
             std::vector<unsigned char> index255TransparentData;
         };
 
-        static std::shared_ptr<PaletteData> makeData(std::vector<unsigned char> data) {
-            ensure(data.size() == 768, "expected 768 bytes");
+        static std::shared_ptr<PaletteData> makePaletteData(std::vector<unsigned char> data) {
+            if (data.size() != 768) {
+                throw AssetException("Could not load palette, expected 768 bytes, got " + std::to_string(data.size()));
+            }
 
             PaletteData result;
             result.opaqueData.reserve(1024);
@@ -70,7 +74,7 @@ namespace TrenchBroom {
         Palette::Palette() {}
 
         Palette::Palette(std::vector<unsigned char> data) :
-        m_data(makeData(data)) {}
+        m_data(makePaletteData(data)) {}
 
         Palette Palette::loadFile(const IO::FileSystem& fs, const IO::Path& path) {
             try {
@@ -122,15 +126,15 @@ namespace TrenchBroom {
         }
 
         bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, TextureBuffer& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
+            ensure(rgbaImage.size() == 4 * pixelCount, "incorrect destination buffer size");
+
             const unsigned char* paletteData =
                 (transparency == PaletteTransparency::Opaque)
                 ? m_data->opaqueData.data()
                 : m_data->index255TransparentData.data();
 
-            assert(reader.canRead(pixelCount));
-
             const unsigned char *indexedImage = reinterpret_cast<const unsigned char*>(reader.begin() + reader.position());
-            reader.seekForward(pixelCount);
+            reader.seekForward(pixelCount); // throws ReaderException if there aren't pixelCount bytes available
 
             // Write rgba pixels
             unsigned char* const rgbaData = rgbaImage.data();

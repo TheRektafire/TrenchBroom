@@ -35,13 +35,12 @@ namespace TrenchBroom {
     }
 
     namespace Assets {
+        struct PaletteData;
         class TextureBuffer;
 
         enum class PaletteTransparency {
             Opaque, Index255Transparent
         };
-
-        struct PaletteData;
 
         class Palette {
         private:
@@ -50,6 +49,9 @@ namespace TrenchBroom {
             Palette();
             Palette(std::vector<unsigned char> data);
 
+            /**
+             * @throws AssetException if the palette can't be loaded
+             */
             static Palette loadFile(const IO::FileSystem& fs, const IO::Path& path);
             static Palette loadLmp(IO::Reader& reader);
             static Palette loadPcx(IO::Reader& reader);
@@ -70,6 +72,7 @@ namespace TrenchBroom {
              * @param averageColor output parameter for the average color of the generated pixel buffer
              * @return true if the given index buffer did contain a transparent index, unless the transparency parameter
              *     indicates that the image is opaque
+             * @throws ReaderException if reader doesn't have pixelCount bytes available
              */
             bool indexedToRgba(IO::BufferedReader& reader, size_t pixelCount, TextureBuffer& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const;
         };
