@@ -35,34 +35,6 @@ namespace TrenchBroom {
             ensure(!m_data.empty(), "palette is empty");
         }
 
-        bool Palette::Data::indexedToRgba(const unsigned char* indexedImage, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
-            float avg[3];
-            avg[0] = avg[1] = avg[2] = 0.0;
-            bool hasTransparency = false;
-            const unsigned char* paletteData = m_data.data();
-
-            {
-                unsigned char* dest = rgbaImage.data();
-
-
-                for (size_t i = 0; i < pixelCount; ++i) {
-                    const int index = static_cast<int>(indexedImage[i]);
-
-                    memcpy(dest, &paletteData[index * 3], 4);
-                    dest += 4;
-                }
-            }
-
-            
-
-            for (size_t i = 0; i < 3; ++i) {
-                averageColor[i] = (avg[i] / static_cast<float>(pixelCount)) / static_cast<float>(0xFF);
-            }
-            averageColor[3] = 1.0f;
-
-            return hasTransparency;
-        }
-
         Palette::Palette() {}
 
         Palette::Palette(std::vector<unsigned char> data) :
@@ -117,8 +89,36 @@ namespace TrenchBroom {
             return m_data.get() != nullptr;
         }
 
-        bool Palette::indexedToRgba(const unsigned char* indexedImage, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
-            return m_data->indexedToRgba(indexedImage, pixelCount, rgbaImage, transparency, averageColor);
+        bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
+            float avg[3];
+            avg[0] = avg[1] = avg[2] = 0.0;
+            bool hasTransparency = false;
+            const unsigned char* paletteData = m_data->m_data.data();
+
+            assert(reader.canRead(pixelCount));
+
+            const unsigned char *indexedImage = reinterpret_cast<const unsigned char*>(reader.begin() + reader.position());
+            reader.seekForward(pixelCount);
+
+            {
+                unsigned char* dest = rgbaImage.data();
+
+
+                for (size_t i = 0; i < pixelCount; ++i) {
+                    const int index = static_cast<int>(indexedImage[i]);
+
+                    memcpy(dest, &paletteData[index * 3], 4);
+                    dest += 4;
+                }
+            }
+
+
+            for (size_t i = 0; i < 3; ++i) {
+                averageColor[i] = (avg[i] / static_cast<float>(pixelCount)) / static_cast<float>(0xFF);
+            }
+            averageColor[3] = 1.0f;
+
+            return hasTransparency;
         }
     }
 }

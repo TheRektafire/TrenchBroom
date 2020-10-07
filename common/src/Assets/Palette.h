@@ -29,6 +29,7 @@
 
 namespace TrenchBroom {
     namespace IO {
+        class BufferedReader;
         class FileSystem;
         class Path;
     }
@@ -41,7 +42,7 @@ namespace TrenchBroom {
         class Palette {
         private:
             class Data {
-            private:
+            public:
                 std::vector<unsigned char> m_data;
                 ///**
                 // * 1024 bytes, RGBA order.
@@ -53,18 +54,6 @@ namespace TrenchBroom {
                 //std::vector<unsigned char> m_index255TransparentData;
             public:
                 Data(std::vector<unsigned char>&& data);
-
-                /**
-                 * Converts the given index buffer to an RGBA image.
-                 *
-                 * @param reader the index buffer
-                 * @param rgbaImage the pixel buffer
-                 * @param transparency controls whether or not the given index buffer contains a transparent index
-                 * @param averageColor output parameter for the average color of the generated pixel buffer
-                 * @return true if the given index buffer did contain a transparent index, unless the transparency parameter
-                 *     indicates that the image is opaque
-                 */
-                bool indexedToRgba(const unsigned char* indexedImage, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, PaletteTransparency transparency, Color& averageColor) const;
             };
 
             using DataPtr = std::shared_ptr<Data>;
@@ -91,7 +80,7 @@ namespace TrenchBroom {
              * @return true if the given index buffer did contain a transparent index, unless the transparency parameter
              *     indicates that the image is opaque
              */
-            bool indexedToRgba(const unsigned char* indexedImage, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const;
+            bool indexedToRgba(IO::BufferedReader& reader, size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const;
         };
     }
 }
