@@ -35,6 +35,8 @@ namespace TrenchBroom {
     }
 
     namespace Assets {
+        class TextureBuffer;
+
         enum class PaletteTransparency {
             Opaque, Index255Transparent
         };
@@ -66,7 +68,7 @@ namespace TrenchBroom {
              * @return true if the given index buffer did contain a transparent index, unless the transparency parameter
              *     indicates that the image is opaque
              */
-            bool indexedToRgba(IO::BufferedReader& reader, size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const;
+            bool indexedToRgba(IO::BufferedReader& reader, size_t pixelCount, TextureBuffer& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const;
         };
     }
 }

@@ -21,6 +21,7 @@
 
 #include "Ensure.h"
 #include "Exceptions.h"
+#include "Assets/TextureBuffer.h"
 #include "IO/File.h"
 #include "IO/Reader.h"
 #include "IO/FileSystem.h"
@@ -120,7 +121,7 @@ namespace TrenchBroom {
             return m_data.get() != nullptr;
         }
 
-        bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, std::vector<unsigned char>& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
+        bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, TextureBuffer& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
             const unsigned char* paletteData =
                 (transparency == PaletteTransparency::Opaque)
                 ? m_data->opaqueData.data()
