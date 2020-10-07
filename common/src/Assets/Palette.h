@@ -59,11 +59,14 @@ namespace TrenchBroom {
             bool initialized() const;
 
             /**
-             * Converts the given index buffer to an RGBA image.
+             * Reads `pixelCount` bytes from `reader` where each byte is a palette index,
+             * and writes `pixelCount` * 4 bytes to `rgbaImage` using the palette to convert
+             * the image to RGBA.
              *
-             * @param indexedImage the index buffer
-             * @param rgbaImage the pixel buffer
-             * @param transparency controls whether or not the given index buffer contains a transparent index
+             * @param reader the reader to read from; the position will be advanced
+             * @param pixelCount number of pixels (bytes) to read
+             * @param rgbaImage the destination buffer
+             * @param transparency controls whether or not the palette contains a transparent index
              * @param averageColor output parameter for the average color of the generated pixel buffer
              * @return true if the given index buffer did contain a transparent index, unless the transparency parameter
              *     indicates that the image is opaque

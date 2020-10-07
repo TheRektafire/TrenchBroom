@@ -133,19 +133,19 @@ namespace TrenchBroom {
             reader.seekForward(pixelCount);
 
             // Write rgba pixels
-            unsigned char* dest = rgbaImage.data();
+            unsigned char* const rgbaData = rgbaImage.data();
             for (size_t i = 0; i < pixelCount; ++i) {
                 const int index = static_cast<int>(indexedImage[i]);
 
-                memcpy(dest + (i * 4), &paletteData[index * 4], 4);
+                memcpy(rgbaData + (i * 4), &paletteData[index * 4], 4);
             }
 
             // Check average color
             uint32_t colorSum[3] = {0, 0, 0};
             for (size_t i = 0; i < pixelCount; ++i) {
-                colorSum[0] += static_cast<uint32_t>(dest[(i * 4) + 0]);
-                colorSum[1] += static_cast<uint32_t>(dest[(i * 4) + 1]);
-                colorSum[2] += static_cast<uint32_t>(dest[(i * 4) + 2]);
+                colorSum[0] += static_cast<uint32_t>(rgbaData[(i * 4) + 0]);
+                colorSum[1] += static_cast<uint32_t>(rgbaData[(i * 4) + 1]);
+                colorSum[2] += static_cast<uint32_t>(rgbaData[(i * 4) + 2]);
             }
             averageColor = Color(colorSum[0] / (255.0f * pixelCount),
                                  colorSum[1] / (255.0f * pixelCount),
@@ -158,7 +158,7 @@ namespace TrenchBroom {
                 // Take the bitwise AND of the alpha channel of all pixels
                 unsigned char andAlpha = 0xff;
                 for (size_t i = 0; i < pixelCount; ++i) {
-                    andAlpha &= dest[(i * 4) + 3];
+                    andAlpha &= rgbaData[(i * 4) + 3];
                 }
                 hasTransparency = (andAlpha != 0xff);
             }
