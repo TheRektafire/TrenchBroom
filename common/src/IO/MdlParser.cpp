@@ -312,8 +312,7 @@ namespace TrenchBroom {
                 const auto skinGroup = reader.readSize<int32_t>();
                 if (skinGroup == 0) {
                     Assets::TextureBuffer rgbaImage(size * 4);
-                    m_palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), size, rgbaImage, transparency, avgColor);
-                    reader.seekForward(size);
+                    m_palette.indexedToRgba(reader, size, rgbaImage, transparency, avgColor);
 
                     const std::string textureName = m_name + "_" + kdl::str_to_string(i);
                     textures.emplace_back(textureName, width, height, avgColor, std::move(rgbaImage), GL_RGBA, type);
@@ -323,8 +322,7 @@ namespace TrenchBroom {
                     Assets::TextureBuffer rgbaImage(size * 4);
                     reader.seekForward(pictureCount * 4); // skip the picture times
 
-                    m_palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), size, rgbaImage, transparency, avgColor);
-                    reader.seekForward(size);
+                    m_palette.indexedToRgba(reader, size, rgbaImage, transparency, avgColor);
                     reader.seekForward((pictureCount - 1) * size);  // skip all remaining pictures
 
                     const std::string textureName = m_name + "_" + kdl::str_to_string(i);

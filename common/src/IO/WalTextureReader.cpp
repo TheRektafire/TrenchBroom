@@ -146,8 +146,7 @@ namespace TrenchBroom {
                     return false;
                 }
 
-                hasTransparency |= (palette.indexedToRgba(reinterpret_cast<const unsigned char*>(reader.begin() + reader.position()), size, buffers[i], transparency, tempColor) && i == 0);
-                reader.seekForward(size);
+                hasTransparency |= (palette.indexedToRgba(reader, size, buffers[i], transparency, tempColor) && i == 0);
                 if (i == 0) {
                     averageColor = tempColor;
                 }

@@ -39,8 +39,6 @@ namespace TrenchBroom {
         class Reader;
 
         class MipTextureReader : public TextureReader {
-        private:
-            std::vector<unsigned char> m_temp;
         protected:
             explicit MipTextureReader(const NameStrategy& nameStrategy, const FileSystem& fs, Logger& logger);
         public:
