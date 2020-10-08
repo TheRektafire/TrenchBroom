@@ -47,7 +47,7 @@ namespace TrenchBroom {
             std::shared_ptr<PaletteData> m_data;
         public:
             Palette();
-            Palette(std::vector<unsigned char> data);
+            Palette(const std::vector<unsigned char>& data);
 
             /**
              * @throws AssetException if the palette can't be loaded

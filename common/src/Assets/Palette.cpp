@@ -29,6 +29,7 @@
 
 #include <kdl/string_format.h>
 
+#include <cstring>
 #include <string>
 
 namespace TrenchBroom {
@@ -44,7 +45,7 @@ namespace TrenchBroom {
             std::vector<unsigned char> index255TransparentData;
         };
 
-        static std::shared_ptr<PaletteData> makePaletteData(std::vector<unsigned char> data) {
+        static std::shared_ptr<PaletteData> makePaletteData(const std::vector<unsigned char>& data) {
             if (data.size() != 768) {
                 throw AssetException("Could not load palette, expected 768 bytes, got " + std::to_string(data.size()));
             }
@@ -70,10 +71,9 @@ namespace TrenchBroom {
             return std::make_shared<PaletteData>(std::move(result));
         }
 
-
         Palette::Palette() {}
 
-        Palette::Palette(std::vector<unsigned char> data) :
+        Palette::Palette(const std::vector<unsigned char>& data) :
         m_data(makePaletteData(data)) {}
 
         Palette Palette::loadFile(const IO::FileSystem& fs, const IO::Path& path) {
@@ -141,7 +141,7 @@ namespace TrenchBroom {
             for (size_t i = 0; i < pixelCount; ++i) {
                 const int index = static_cast<int>(indexedImage[i]);
 
-                memcpy(rgbaData + (i * 4), &paletteData[index * 4], 4);
+                std::memcpy(rgbaData + (i * 4), &paletteData[index * 4], 4);
             }
 
             // Check average color
@@ -151,9 +151,9 @@ namespace TrenchBroom {
                 colorSum[1] += static_cast<uint32_t>(rgbaData[(i * 4) + 1]);
                 colorSum[2] += static_cast<uint32_t>(rgbaData[(i * 4) + 2]);
             }
-            averageColor = Color(colorSum[0] / (255.0f * pixelCount),
-                                 colorSum[1] / (255.0f * pixelCount),
-                                 colorSum[2] / (255.0f * pixelCount),
+            averageColor = Color(static_cast<float>(colorSum[0]) / (255.0f * static_cast<float>(pixelCount)),
+                                 static_cast<float>(colorSum[1]) / (255.0f * static_cast<float>(pixelCount)),
+                                 static_cast<float>(colorSum[2]) / (255.0f * static_cast<float>(pixelCount)),
                                  1.0f);
 
             // Check for transparency
