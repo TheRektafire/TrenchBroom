@@ -68,7 +68,7 @@ namespace TrenchBroom {
              * and writes `pixelCount` * 4 bytes to `rgbaImage` using the palette to convert
              * the image to RGBA.
              *
-             * Must not be caleld if `initialized()` is false.
+             * Must not be called if `initialized()` is false.
              *
              * @param reader the reader to read from; the position will be advanced
              * @param pixelCount number of pixels (bytes) to read
