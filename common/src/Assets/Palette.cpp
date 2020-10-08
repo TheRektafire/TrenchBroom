@@ -127,6 +127,7 @@ namespace TrenchBroom {
 
         bool Palette::indexedToRgba(IO::BufferedReader& reader, const size_t pixelCount, TextureBuffer& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const {
             ensure(rgbaImage.size() == 4 * pixelCount, "incorrect destination buffer size");
+            ensure(initialized(), "indexedToRgba called on uninitialized palette");
 
             const unsigned char* paletteData =
                 (transparency == PaletteTransparency::Opaque)

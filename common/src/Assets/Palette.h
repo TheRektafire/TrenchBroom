@@ -47,6 +47,9 @@ namespace TrenchBroom {
             std::shared_ptr<PaletteData> m_data;
         public:
             Palette();
+            /**
+             * @throws AssetException if data is not 768 bytes
+             */
             Palette(const std::vector<unsigned char>& data);
 
             /**
@@ -65,13 +68,16 @@ namespace TrenchBroom {
              * and writes `pixelCount` * 4 bytes to `rgbaImage` using the palette to convert
              * the image to RGBA.
              *
+             * Must not be caleld if `initialized()` is false.
+             *
              * @param reader the reader to read from; the position will be advanced
              * @param pixelCount number of pixels (bytes) to read
-             * @param rgbaImage the destination buffer
+             * @param rgbaImage the destination buffer, size must be exactly `pixelCount` * 4 bytes
              * @param transparency controls whether or not the palette contains a transparent index
              * @param averageColor output parameter for the average color of the generated pixel buffer
              * @return true if the given index buffer did contain a transparent index, unless the transparency parameter
              *     indicates that the image is opaque
+             *
              * @throws ReaderException if reader doesn't have pixelCount bytes available
              */
             bool indexedToRgba(IO::BufferedReader& reader, size_t pixelCount, TextureBuffer& rgbaImage, const PaletteTransparency transparency, Color& averageColor) const;
